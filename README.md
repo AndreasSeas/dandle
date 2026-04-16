@@ -1,4 +1,4 @@
-# Dandle
+# [[Dandle]](https://andreasseas.github.io/dandle/)
 
 **Dandle** is a neurosurgery diagnosis game inspired by *Wordle* — built for rapid clinical reasoning, pattern recognition, and spaced repetition.
 
