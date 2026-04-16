@@ -1,4 +1,4 @@
-# Dandle 🧠
+# Dandle
 
 **Dandle** is a neurosurgery diagnosis game inspired by *Wordle* — built for rapid clinical reasoning, pattern recognition, and spaced repetition.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 What it is
+## What it is
 
 Dandle presents real-world neurosurgical cases and challenges you to diagnose them using progressively revealed clues:
 
@@ -16,11 +16,11 @@ Dandle presents real-world neurosurgical cases and challenges you to diagnose th
 * 🧪 Labs
 * ⚕️ Intraoperative / Pathology
 
-Each guess reveals more information — training how clinicians actually think.
+Each guess reveals more information.
 
 ---
 
-## 🧠 Domains Covered
+## Domains Covered
 
 * Neurotrauma
 * Cerebrovascular
@@ -34,7 +34,7 @@ Each guess reveals more information — training how clinicians actually think.
 
 ---
 
-## ⚙️ Features
+## Features
 
 * Progressive clue unlocking (Wordle-style)
 * Tiered difficulty (Core / Intermediate / Advanced)
@@ -45,7 +45,7 @@ Each guess reveals more information — training how clinicians actually think.
 
 ---
 
-## 🧩 Case Design
+## Case Design
 
 Each case is structured with:
 
@@ -55,40 +55,16 @@ Each case is structured with:
 * 5-step clinical reasoning progression
 * Evidence-based explanation
 * Guideline reference
-* Anki-ready tags
 
 ---
 
-## 🚀 Running Locally
-
-```bash
-git clone https://github.com/yourusername/dandle.git
-cd dandle
-open index.html
-```
-
-No build step required — pure HTML/CSS/JS.
-
----
-
-## 📚 Educational Philosophy
-
-Dandle is built around:
-
-* Pattern recognition over memorization
-* Incremental information exposure
-* Clinical realism
-* High-yield neurosurgical decision points
-
----
-
-## ⚠️ Disclaimer
+## Disclaimer
 
 This is an educational tool only and **not medical advice**.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the
 **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)**.
