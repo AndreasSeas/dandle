@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Dandle</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #07090f;
+  --bg2:        #0d1117;
+  --surface:    #111827;
+  --surface2:   #162032;
+  --border:     #1e2d47;
+  --border2:    #253650;
+  --accent:     #4fc3f7;
+  --accent2:    #7c83ff;
+  --green:      #4ade80;
+  --yellow:     #fcd34d;
+  --red:        #f87171;
+  --text:       #e2e8f0;
+  --text-dim:   #94a3b8;
+  --text-muted: #475569;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(79,195,247,.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 80%, rgba(124,131,255,.06) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 60% at 50% 50%, rgba(74,222,128,.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 40px;
+  border-bottom: 1px solid var(--border);
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.nav-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-logo em { font-style: italic; color: var(--accent); }
+
+.nav-back {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all .15s;
+  letter-spacing: .05em;
+}
+
+.nav-back:hover { color: var(--accent); border-color: var(--accent); background: rgba(79,195,247,.05); }
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 80px 40px 60px;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  opacity: .8;
+}
+
+.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(52px, 8vw, 88px);
+  line-height: 1.0;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 540px;
+  margin: 0 auto 40px;
+  font-weight: 300;
+}
+
+.hero-sub strong { color: var(--text); font-weight: 500; }
+
+/* ── THREE MEANINGS ── */
+.meanings {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto 80px;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 680px) {
+  .meanings { grid-template-columns: 1fr; }
+  nav, .hero, .meanings, .story-section, .walter-section, .play-cta { padding-left: 24px; padding-right: 24px; }
+}
+
+.meaning-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s;
+}
+
+.meaning-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .3s;
+  border-radius: 14px;
+}
+
+.meaning-card:hover { transform: translateY(-3px); }
+.meaning-card:hover::before { opacity: 1; }
+
+.meaning-card.card-wordle { border-top: 3px solid var(--green); }
+.meaning-card.card-wordle::before { background: radial-gradient(ellipse at top, rgba(74,222,128,.06), transparent 60%); }
+.meaning-card.card-wordle:hover { border-color: var(--green); }
+
+.meaning-card.card-dandy { border-top: 3px solid var(--accent); }
+.meaning-card.card-dandy::before { background: radial-gradient(ellipse at top, rgba(79,195,247,.06), transparent 60%); }
+.meaning-card.card-dandy:hover { border-color: var(--accent); }
+
+.meaning-card.card-dandle { border-top: 3px solid var(--yellow); }
+.meaning-card.card-dandle::before { background: radial-gradient(ellipse at top, rgba(252,211,77,.06), transparent 60%); }
+.meaning-card.card-dandle:hover { border-color: var(--yellow); }
+
+.meaning-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+
+.card-wordle .meaning-num { color: var(--green); }
+.card-dandy  .meaning-num { color: var(--accent); }
+.card-dandle .meaning-num { color: var(--yellow); }
+
+.meaning-word {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  font-style: italic;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.meaning-pos {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.meaning-def {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.meaning-def strong { color: var(--text); }
+
+/* ── STORY SECTION ── */
+.story-section {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto 80px;
+  padding: 0 40px;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  opacity: .7;
+}
+
+.story-section h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 36px;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  letter-spacing: -.5px;
+}
+
+.story-section h2 em { font-style: italic; color: var(--accent); }
+
+.story-section p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+  font-weight: 300;
+}
+
+.story-section p strong { color: var(--text); font-weight: 500; }
+
+/* ── PULL QUOTE ── */
+.pull-quote {
+  border-left: 3px solid var(--accent2);
+  padding: 16px 20px;
+  margin: 32px 0;
+  background: rgba(124,131,255,.05);
+  border-radius: 0 10px 10px 0;
+}
+
+.pull-quote p {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0;
+}
+
+.pull-quote cite {
+  display: block;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-style: normal;
+}
+
+/* ── WALTER SECTION ── */
+.walter-section {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto 80px;
+  padding: 0 40px;
+}
+
+.walter-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 560px) {
+  .walter-card { grid-template-columns: 1fr; }
+}
+
+.walter-portrait {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  flex-shrink: 0;
+}
+
+.walter-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px;
+  margin-bottom: 4px;
+  letter-spacing: -.3px;
+}
+
+.walter-dates {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: .08em;
+  margin-bottom: 16px;
+}
+
+.walter-bio {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.walter-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.walter-fact {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(79,195,247,.08);
+  border: 1px solid rgba(79,195,247,.2);
+  padding: 3px 9px;
+  border-radius: 5px;
+  letter-spacing: .04em;
+}
+
+/* ── DISCLAIMER ── */
+.disclaimer-section {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto 80px;
+  padding: 0 40px;
+}
+
+.disclaimer-card {
+  background: rgba(248,113,113,.04);
+  border: 1px solid rgba(248,113,113,.2);
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.disclaimer-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
+.disclaimer-card h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+
+.disclaimer-card p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* ── PLAY CTA ── */
+.play-cta {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto 80px;
+  padding: 0 40px;
+  text-align: center;
+}
+
+.play-cta h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 42px;
+  letter-spacing: -.5px;
+  margin-bottom: 12px;
+}
+
+.play-cta h2 em { font-style: italic; color: var(--accent); }
+
+.play-cta p {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  font-weight: 300;
+}
+
+.btn-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent);
+  color: #07090f;
+  text-decoration: none;
+  padding: 15px 36px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Instrument Sans', sans-serif;
+  transition: all .15s;
+  letter-spacing: .02em;
+}
+
+.btn-play:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(79,195,247,.3);
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 32px 40px 40px;
+  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .03em;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  max-width: 900px;
+  margin: 0 auto 60px;
+  padding: 0 40px;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* ── ANIMATE IN ── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeUp .6s ease forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: none; }
+}
+
+.fade-up:nth-child(1) { animation-delay: .05s; }
+.fade-up:nth-child(2) { animation-delay: .15s; }
+.fade-up:nth-child(3) { animation-delay: .25s; }
+.fade-up:nth-child(4) { animation-delay: .35s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Dan<em>dle</em></a>
+  <a href="index.html" class="nav-back">← Play</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero fade-up">
+  <div class="hero-eyebrow">About the game</div>
+  <h1 class="hero-title">Dan<em>dle</em></h1>
+  <p class="hero-sub">
+    A daily neurosurgery diagnosis game for the obsessives, the residents, the attendings, and the
+    <strong>dangerously curious</strong>. One case. Five clues. How fast can you crack it?
+  </p>
+</section>
+
+<!-- THREE MEANINGS -->
+<section class="meanings">
+
+  <div class="meaning-card card-wordle fade-up">
+    <div class="meaning-num">①</div>
+    <div class="meaning-word">Wordle</div>
+    <div class="meaning-pos">noun · the bit everyone recognises</div>
+    <div class="meaning-def">
+      The "-dle" suffix tells you everything you need to know: <strong>one puzzle a day</strong>,
+      a streak to protect, a result to share. Dandle is proudly part of that family — just with
+      considerably more intracranial pressure.
+    </div>
+  </div>
+
+  <div class="meaning-card card-dandy fade-up">
+    <div class="meaning-num">②</div>
+    <div class="meaning-word">Walter Dandy</div>
+    <div class="meaning-pos">noun · the patron saint of this game</div>
+    <div class="meaning-def">
+      <strong>Walter Edward Dandy (1886–1946)</strong> was one of the founding fathers of neurosurgery.
+      He pioneered ventriculography, described the Dandy–Walker malformation,
+      and invented the surgical clip for cerebral aneurysms.
+      Every case in this game exists because of people like him.
+    </div>
+  </div>
+
+  <div class="meaning-card card-dandle fade-up">
+    <div class="meaning-num">③</div>
+    <div class="meaning-word">dandle</div>
+    <div class="meaning-pos">verb · the bit that makes us smile</div>
+    <div class="meaning-def">
+      <em>to dandle</em> (v.) — to gently bounce a baby on one's knee.
+      <strong>Because babies are cute.</strong> And because neurosurgery, for all its gravity,
+      deserves a name that makes you grin a little.
+    </div>
+  </div>
+
+</section>
+
+<hr class="divider">
+
+<!-- STORY -->
+<section class="story-section fade-up">
+  <div class="section-label">The Why</div>
+  <h2>Brain surgery is hard.<br><em>Learning it shouldn't be.</em></h2>
+
+  <p>
+    Neurosurgery residency is seven years of relentless case exposure — trauma bays at 3am, 
+    tumour boards on Friday afternoons, spine emergencies on Christmas morning. 
+    The knowledge accumulates in layers, case by case, clue by clue.
+  </p>
+
+  <p>
+    That's exactly what Dandle tries to replicate. Not multiple choice questions. Not 
+    lecture slides. <strong>A patient walks in. You read the history. You make a call.</strong> 
+    Each wrong answer reveals the next layer — the exam, the imaging, the labs, 
+    the intraoperative finding — just like a real case unfolding in real time.
+  </p>
+
+  <div class="pull-quote">
+    <p>"The good surgeon knows how. The great surgeon knows when. The wise surgeon knows why."</p>
+    <cite>— paraphrased from neurosurgical lore</cite>
+  </div>
+
+  <p>
+    Every case in Dandle is anchored to a real society guideline — AANS, CNS, BTF, NASS, 
+    AHA/ASA, WHO CNS5 — so the teaching point you read after the case isn't just trivia. 
+    It's the same framework your attending uses when deciding whether to operate.
+  </p>
+
+  <p>
+    And yes, each case links to <strong>Anki tags</strong> so you can immediately pull the 
+    relevant flashcards. Because learning should compound, not fragment.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- WALTER DANDY -->
+<section class="walter-section fade-up">
+  <div style="max-width:680px;margin:0 auto 32px;padding:0;">
+    <div class="section-label">The Namesake</div>
+  </div>
+  <div class="walter-card">
+    <div class="walter-portrait">🧠</div>
+    <div>
+      <div class="walter-name">Walter Edward Dandy</div>
+      <div class="walter-dates">APRIL 6, 1886 — APRIL 19, 1946</div>
+      <p class="walter-bio">
+        Born in Sedalia, Missouri, Walter Dandy trained under Harvey Cushing at Johns Hopkins 
+        before eventually surpassing his mentor's operative speed and technical brilliance — a 
+        fact that did not endear him to Cushing. Their rivalry became one of medicine's great 
+        feuds, fuelled by ego, genius, and genuine disagreement about how to operate on the human brain.
+      </p>
+      <p class="walter-bio">
+        Dandy invented <strong>pneumoencephalography</strong> and <strong>ventriculography</strong> 
+        — the first ways to image the brain before MRI existed. He performed the first 
+        successful surgery for a cerebral aneurysm. He described the <strong>Dandy–Walker 
+        malformation</strong>. He pioneered surgery for trigeminal neuralgia, acoustic neuromas, 
+        and pineal tumours. He did all of this before CT scans, before the operating microscope, 
+        before modern anaesthesia.
+      </p>
+      <p class="walter-bio">
+        He was also, by most accounts, an extremely difficult person to work with. 
+        Which is, perhaps, very on-brand for a neurosurgeon.
+      </p>
+      <div class="walter-facts">
+        <span class="walter-fact">Ventriculography (1918)</span>
+        <span class="walter-fact">Cerebral aneurysm clipping</span>
+        <span class="walter-fact">Dandy–Walker malformation</span>
+        <span class="walter-fact">Trigeminal neuralgia surgery</span>
+        <span class="walter-fact">Acoustic neuroma resection</span>
+        <span class="walter-fact">Johns Hopkins, Baltimore</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DISCLAIMER -->
+<section class="disclaimer-section fade-up">
+  <div class="disclaimer-card">
+    <div class="disclaimer-icon">⚕️</div>
+    <div>
+      <h3>A serious note</h3>
+      <p>
+        Dandle is an educational game built for medical students, residents, and neurosurgeons. 
+        It does not constitute medical advice. The cases are illustrative, not diagnostic. 
+        The guidelines referenced are real — but guidelines change, and clinical judgment always 
+        takes precedence over a game. If you or someone you know has a neurological emergency, 
+        please call emergency services immediately. This is not that app.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PLAY CTA -->
+<section class="play-cta fade-up">
+  <h2>Ready to get <em>dandled?</em></h2>
+  <p>One case. Five clues. Your diagnosis.</p>
+  <a href="index.html" class="btn-play">🧠 Play Today's Case</a>
+</section>
+
+<footer>
+  Dandle · Built for neurosurgeons, by someone who finds brains delightful · Not medical advice
+</footer>
+
+</body>
+</html>

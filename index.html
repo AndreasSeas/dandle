@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dandle — Neurosurgery Diagnosis Game</title>
+<!-- Dandle: Wordle × Walter Dandy × dandle (v.) to bounce a baby on your knee -->
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #07090f;
+  --bg2:        #0d1117;
+  --surface:    #111827;
+  --surface2:   #162032;
+  --border:     #1e2d47;
+  --border2:    #253650;
+  --accent:     #4fc3f7;
+  --accent2:    #7c83ff;
+  --green:      #4ade80;
+  --yellow:     #fcd34d;
+  --red:        #f87171;
+  --text:       #e2e8f0;
+  --text-dim:   #94a3b8;
+  --text-muted: #475569;
+  --clue-bg:    #0c1828;
+  --radius:     10px;
+  --radius-lg:  14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* ── AMBIENT GLOW ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 40% at 30% 0%, rgba(79,195,247,.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 30% at 80% 90%, rgba(124,131,255,.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 660px;
+  padding: 0 16px 80px;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.logo-word {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.logo-word em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.logo-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-icon {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,195,247,.06); }
+
+.btn-ghost {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,195,247,.06); }
+.btn-ghost.active { border-color: var(--accent); color: var(--accent); background: rgba(79,195,247,.1); }
+
+/* ── MODE TABS ── */
+.mode-bar {
+  display: flex;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 18px 0 22px;
+}
+
+.mode-tab {
+  flex: 1;
+  background: var(--surface);
+  border: none;
+  color: var(--text-muted);
+  padding: 9px 8px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  letter-spacing: .01em;
+}
+
+.mode-tab:hover { background: var(--surface2); color: var(--text-dim); }
+
+.mode-tab.active {
+  background: var(--surface2);
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ── DAILY PILL ── */
+.daily-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--clue-bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  gap: 10px;
+}
+
+.daily-banner.hidden { display: none; }
+
+.daily-banner-left { display: flex; align-items: center; gap: 10px; }
+
+.daily-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(79,195,247,.6);
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .6; transform: scale(.85); }
+}
+
+.daily-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.daily-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.daily-streak {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--yellow);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── CATEGORY FILTER ── */
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-section.hidden { display: none; }
+
+.filter-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 10px;
+}
+
+.domain-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.domain-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.domain-chip:hover { border-color: var(--border2); color: var(--text); }
+
+.domain-chip.active {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.domain-chip .chip-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  opacity: .6;
+}
+
+.tier-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tier-chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  user-select: none;
+}
+
+.tier-chip:hover { border-color: var(--border2); color: var(--text); }
+.tier-chip.active { border-color: var(--accent2); color: var(--accent2); background: rgba(124,131,255,.1); }
+
+.filter-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* ── CASE META ── */
+.case-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.case-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.case-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.case-domain-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+}
+
+.case-tier-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.tier-core     { color: #4ade80; border-color: rgba(74,222,128,.3); background: rgba(74,222,128,.08); }
+.tier-intermediate { color: #fcd34d; border-color: rgba(252,211,77,.3); background: rgba(252,211,77,.08); }
+.tier-advanced { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+
+.attempt-pips { display: flex; gap: 5px; }
+
+.pip {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: all .3s;
+}
+
+.pip.used    { background: var(--text-muted); border-color: var(--text-muted); }
+.pip.correct { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px rgba(74,222,128,.5); }
+
+/* ── CLUE CARDS ── */
+.clues-container {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.clue-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--clue-bg);
+  overflow: hidden;
+  transition: opacity .3s, transform .3s;
+}
+
+.clue-card.hidden-clue {
+  opacity: .18;
+  filter: blur(.3px);
+}
+
+.clue-card.revealed {
+  animation: clueReveal .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes clueReveal {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.clue-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 15px;
+}
+
+.clue-icon-wrap {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.clue-content { flex: 1; min-width: 0; }
+
+.clue-type-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  opacity: .75;
+}
+
+.clue-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.clue-card.hidden-clue .clue-type-label,
+.clue-card.hidden-clue .clue-text {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.clue-card.hidden-clue .clue-icon-wrap { opacity: .25; }
+
+/* ── GUESS HISTORY ── */
+.guesses-section { margin-bottom: 18px; min-height: 10px; }
+
+.guess-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid;
+  animation: slideIn .2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.guess-correct  { background: rgba(74,222,128,.08);  border-color: rgba(74,222,128,.35);  color: var(--green); }
+.guess-partial  { background: rgba(252,211,77,.07);  border-color: rgba(252,211,77,.3);   color: var(--yellow); }
+.guess-wrong    { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.06); color: var(--text-muted); opacity: .7; }
+
+.guess-icon  { font-size: 12px; flex-shrink: 0; }
+.guess-label { flex: 1; }
+.guess-note  { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: .65; }
+
+/* ── INPUT AREA ── */
+.input-area { position: relative; margin-bottom: 4px; }
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dx-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 13px 15px;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-family: 'Instrument Sans', sans-serif;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  caret-color: var(--accent);
+}
+
+.dx-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,195,247,.08);
+}
+
+.dx-input::placeholder { color: var(--text-muted); }
+
+.btn-submit {
+  background: var(--accent);
+  color: #07090f;
+  border: none;
+  padding: 13px 22px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Instrument Sans', sans-serif;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+
+.btn-submit:hover  { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 18px rgba(79,195,247,.25); }
+.btn-submit:active { transform: none; }
+.btn-submit:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
+
+/* ── AUTOCOMPLETE ── */
+.autocomplete {
+  position: absolute;
+  top: calc(100% - 8px);
+  left: 0;
+  right: 84px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 20;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
+}
+
+.ac-item {
+  padding: 9px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-dim);
+  transition: background .08s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ac-item:hover, .ac-item.ac-active { background: var(--surface); color: var(--text); }
+.ac-cat { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+
+/* ── REVEAL BTN ── */
+.reveal-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'Instrument Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.reveal-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(124,131,255,.04); }
+
+/* ── RESULT PANEL ── */
+.result-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 22px;
+  margin-top: 20px;
+  animation: fadeUp .4s ease;
+}
+
+.result-panel.show { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.result-top { text-align: center; margin-bottom: 20px; }
+
+.result-emoji { font-size: 44px; margin-bottom: 10px; display: block; }
+
+.result-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.result-title.win  { color: var(--green); }
+.result-title.lose { color: var(--red); }
+
+.result-dx {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.result-dx strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+/* ── GUIDELINE BLOCK ── */
+.guideline-block {
+  background: rgba(79,195,247,.04);
+  border: 1px solid rgba(79,195,247,.15);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.guideline-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+.guideline-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  line-height: 1.5;
+  opacity: .8;
+}
+
+/* ── TEACHING POINT ── */
+.teaching-block {
+  background: var(--clue-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 15px;
+  margin-bottom: 14px;
+}
+
+.teaching-block h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.teaching-block p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* ── ANKI TAGS ── */
+.anki-section { margin-bottom: 18px; }
+
+.anki-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 7px;
+  opacity: .8;
+}
+
+.anki-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.anki-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent2);
+  background: rgba(124,131,255,.1);
+  border: 1px solid rgba(124,131,255,.25);
+  padding: 3px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.anki-tag:hover { background: rgba(124,131,255,.2); border-color: var(--accent2); }
+
+/* ── RESULT ACTIONS ── */
+.result-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #07090f;
+  border: none;
+  padding: 11px 22px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Instrument Sans', sans-serif;
+  cursor: pointer;
+  transition: all .15s;
+  flex: 1;
+  min-width: 130px;
+}
+
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 18px rgba(79,195,247,.2); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 11px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: 'Instrument Sans', sans-serif;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  width: 28px; height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all .15s;
+}
+
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+
+.modal h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  margin-bottom: 18px;
+  padding-right: 32px;
+}
+
+.modal p, .modal li {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.modal ul { padding-left: 18px; }
+
+/* stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--clue-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 32px;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+/* how-to-play icon grid */
+.how-grid {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 6px 12px;
+  align-items: center;
+  margin: 14px 0;
+}
+
+.how-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.how-text { font-size: 13px; color: var(--text-dim); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 14px; }
+
+.empty-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.empty-sub { font-size: 14px; line-height: 1.6; }
+
+/* ── DAILY COMPLETE ── */
+.daily-complete {
+  background: var(--clue-bg);
+  border: 1px solid rgba(74,222,128,.25);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.daily-complete h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.daily-complete p { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; }
+
+.countdown {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  letter-spacing: .05em;
+  margin-bottom: 6px;
+}
+
+.countdown-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 0 8px;
+  line-height: 1.7;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <span class="logo-word">Dan<em>dle</em></span>
+      <span class="logo-badge">β</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-ghost" id="btnStats" onclick="openModal('statsModal')">Stats</button>
+      <button class="btn-ghost" onclick="window.location.href='about.html'">About</button>
+      <button class="btn-icon" onclick="openModal('howModal')" title="How to play">?</button>
+    </div>
+  </header>
+
+  <!-- MODE TABS -->
+  <div class="mode-bar">
+    <button class="mode-tab active" id="tab-daily" onclick="setMode('daily')">📅 Daily Case</button>
+    <button class="mode-tab" id="tab-practice" onclick="setMode('practice')">🎯 Practice</button>
+    <button class="mode-tab" id="tab-category" onclick="setMode('category')">📂 By Category</button>
+  </div>
+
+  <!-- DAILY BANNER -->
+  <div class="daily-banner" id="dailyBanner">
+    <div class="daily-banner-left">
+      <div class="daily-dot"></div>
+      <div>
+        <div class="daily-label">Daily Case</div>
+        <div class="daily-date" id="dailyDate"></div>
+      </div>
+    </div>
+    <div class="daily-streak" id="dailyStreakBadge"></div>
+  </div>
+
+  <!-- CATEGORY FILTER (shown in category mode) -->
+  <div class="filter-section hidden" id="filterSection">
+    <div class="filter-title">Filter by subspecialty</div>
+    <div class="domain-chips" id="domainChips"></div>
+    <div class="tier-chips" id="tierChips">
+      <div class="tier-chip active" data-tier="all" onclick="toggleTier(this)">All tiers</div>
+      <div class="tier-chip" data-tier="core" onclick="toggleTier(this)">🟢 Core</div>
+      <div class="tier-chip" data-tier="intermediate" onclick="toggleTier(this)">🟡 Intermediate</div>
+      <div class="tier-chip" data-tier="advanced" onclick="toggleTier(this)">🔴 Advanced</div>
+    </div>
+    <div class="filter-count" id="filterCount"></div>
+  </div>
+
+  <!-- DAILY COMPLETE SCREEN -->
+  <div id="dailyCompleteScreen" style="display:none;">
+    <div class="daily-complete">
+      <div style="font-size:48px;margin-bottom:12px;" id="dcEmoji"></div>
+      <h3 id="dcTitle"></h3>
+      <p id="dcSub"></p>
+      <div class="countdown" id="countdown"></div>
+      <div class="countdown-label">Until tomorrow's case</div>
+    </div>
+  </div>
+
+  <!-- GAME AREA -->
+  <div id="gameArea">
+
+    <!-- CASE META -->
+    <div class="case-meta">
+      <div class="case-info">
+        <span class="case-num" id="caseNum"></span>
+        <span class="case-domain-badge" id="caseDomainBadge"></span>
+        <span class="case-tier-badge" id="caseTierBadge"></span>
+      </div>
+      <div class="attempt-pips" id="pips"></div>
+    </div>
+
+    <!-- CLUES -->
+    <div class="clues-container" id="cluesContainer"></div>
+
+    <!-- GUESS HISTORY -->
+    <div class="guesses-section" id="guessHistory"></div>
+
+    <!-- INPUT -->
+    <div class="input-area" id="inputArea">
+      <div class="input-row">
+        <input type="text" class="dx-input" id="dxInput"
+          placeholder="Enter diagnosis…"
+          autocomplete="off" spellcheck="false"
+          oninput="handleInput()"
+          onkeydown="handleKey(event)" />
+        <button class="btn-submit" id="submitBtn" onclick="submitGuess()">Submit</button>
+      </div>
+      <div class="autocomplete" id="autocomplete" style="display:none;"></div>
+      <button class="reveal-btn" id="revealBtn" onclick="revealNextClue()" style="display:none;">
+        + Reveal next clue
+      </button>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-panel" id="resultPanel">
+      <div class="result-top">
+        <span class="result-emoji" id="rEmoji"></span>
+        <div class="result-title" id="rTitle"></div>
+        <div class="result-dx" id="rDx"></div>
+      </div>
+      <div class="guideline-block">
+        <span class="guideline-icon">📋</span>
+        <div class="guideline-text" id="rGuideline"></div>
+      </div>
+      <div class="teaching-block">
+        <h4>Teaching Point</h4>
+        <p id="rExplanation"></p>
+      </div>
+      <div class="anki-section">
+        <div class="anki-label">Anki Tags</div>
+        <div class="anki-tags" id="rAnkiTags"></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-primary" id="nextBtn" onclick="nextCase()">Next Case →</button>
+        <button class="btn-secondary" onclick="shareResult()">Share 📤</button>
+      </div>
+    </div>
+
+  </div><!-- /gameArea -->
+
+  <footer>
+    Dandle is for educational purposes only and does not constitute medical advice.<br>
+    Guidelines referenced: AANS · CNS · BTF · NASS · AHA/ASA · WHO CNS5 2021<br>
+    <a href="about.html" style="color:var(--text-muted);text-decoration:none;border-bottom:1px solid var(--border);">About Dandle</a>
+  </footer>
+</div>
+
+<!-- HOW TO PLAY MODAL -->
+<div class="modal-overlay" id="howModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('howModal')">✕</button>
+    <h2>How to Play</h2>
+    <p>Diagnose the neurosurgical case using as few clues as possible. Each case has five clue tiers:</p>
+    <div class="how-grid">
+      <div class="how-icon">🧾</div><div class="how-text"><strong>History</strong> — always visible from the start</div>
+      <div class="how-icon">🔬</div><div class="how-text"><strong>Exam</strong> — unlocks after 1st wrong guess</div>
+      <div class="how-icon">🧠</div><div class="how-text"><strong>Imaging</strong> — unlocks after 2nd</div>
+      <div class="how-icon">🧪</div><div class="how-text"><strong>Labs / Special</strong> — unlocks after 3rd</div>
+      <div class="how-icon">⚕️</div><div class="how-text"><strong>Intraop / Pathology</strong> — unlocks after 4th</div>
+    </div>
+    <ul>
+      <li>You can also manually reveal the next clue at any time (costs an attempt).</li>
+      <li>Correct on the 1st clue = ★★★★★ (five stars). Each extra clue costs a star.</li>
+      <li>Each case links to AANS, CNS, BTF, NASS or other society guidelines.</li>
+      <li><strong>Daily mode:</strong> one new case each day, same for everyone. Streak counts!</li>
+      <li><strong>Practice mode:</strong> random case from the full library.</li>
+      <li><strong>Category mode:</strong> filter by subspecialty and difficulty tier.</li>
+    </ul>
+    <br>
+    <button class="btn-primary" onclick="closeModal('howModal')">Got it</button>
+  </div>
+</div>
+
+<!-- STATS MODAL -->
+<div class="modal-overlay" id="statsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('statsModal')">✕</button>
+    <h2>Your Stats</h2>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="statsBreakdown"></div>
+    <button class="btn-primary" onclick="closeModal('statsModal')">Close</button>
+  </div>
+</div>
+
+<!-- cases.js loaded first -->
+<script src="cases.js"></script>
+<script>
+// ─── ALL DIAGNOSES (autocomplete pool) ───────────────────────────────────────
+const ALL_DIAGNOSES = [
+  ...new Set(CASES.flatMap(c => [c.answer, ...c.aliases]))
+].sort();
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let G = {
+  mode:          'daily',   // 'daily' | 'practice' | 'category'
+  activeCase:    null,
+  revealedClues: 1,
+  guesses:       [],
+  done:          false,
+  acIdx:         -1,
+  acItems:       [],
+  filteredDomain: null,
+  filteredTier:   'all',
+  filteredPool:   [],
+  practiceIdx:    0,
+};
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+function loadStats() {
+  return JSON.parse(localStorage.getItem('dandle_v2_stats') || JSON.stringify({
+    played: 0, wins: 0, streak: 0, bestStreak: 0, totalClues: 0,
+    daily: { lastDate: null, streak: 0, completed: {} },
+    byDomain: {}
+  }));
+}
+
+function saveStats(s) {
+  localStorage.setItem('dandle_v2_stats', JSON.stringify(s));
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(str) {
+  return new Date(str + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+}
+
+// ─── DAILY CASE SELECTION ─────────────────────────────────────────────────────
+function getDailyCaseForToday() {
+  const epoch = new Date('2025-01-01T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const day   = Math.floor((today - epoch) / 86400000);
+  return CASES[day % CASES.length];
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────────────────────────
+function updateCountdown() {
+  const now      = new Date();
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
+  const diff     = tomorrow - now;
+  const h = String(Math.floor(diff/3600000)).padStart(2,'0');
+  const m = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+  const s = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+  const el = document.getElementById('countdown');
+  if (el) el.textContent = `${h}:${m}:${s}`;
+}
+
+// ─── MODE SWITCHING ───────────────────────────────────────────────────────────
+function setMode(mode) {
+  G.mode = mode;
+  ['daily','practice','category'].forEach(m => {
+    document.getElementById(`tab-${m}`).classList.toggle('active', m === mode);
+  });
+  document.getElementById('dailyBanner').classList.toggle('hidden', mode !== 'daily');
+  document.getElementById('filterSection').classList.toggle('hidden', mode !== 'category');
+  document.getElementById('dailyCompleteScreen').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+
+  if (mode === 'daily') {
+    loadDailyMode();
+  } else if (mode === 'practice') {
+    startRandomCase();
+  } else {
+    buildCategoryFilter();
+    startCategoryCase();
+  }
+}
+
+// ─── DAILY MODE ───────────────────────────────────────────────────────────────
+function loadDailyMode() {
+  const today = todayStr();
+  const stats = loadStats();
+  document.getElementById('dailyDate').textContent = formatDate(today);
+
+  const streak = stats.daily.streak || 0;
+  document.getElementById('dailyStreakBadge').textContent = streak > 0 ? `🔥 ${streak}` : '';
+
+  // Already completed today?
+  if (stats.daily.completed && stats.daily.completed[today] !== undefined) {
+    const result = stats.daily.completed[today];
+    showDailyComplete(result, stats.daily.streak);
+    return;
+  }
+
+  G.activeCase = getDailyCaseForToday();
+  startGame();
+}
+
+function showDailyComplete(result, streak) {
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('dailyCompleteScreen').style.display = 'block';
+  const won = result.won;
+  document.getElementById('dcEmoji').textContent = won ? '🏆' : '📖';
+  document.getElementById('dcTitle').textContent = won ? 'You diagnosed it!' : 'Case reviewed';
+  document.getElementById('dcSub').textContent = won
+    ? `Diagnosed in ${result.clues} clue${result.clues > 1 ? 's' : ''} • ${streak > 0 ? `🔥 ${streak} day streak` : ''}`
+    : `Today's answer: ${result.answer}`;
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+
+// ─── PRACTICE MODE ────────────────────────────────────────────────────────────
+function startRandomCase() {
+  const idx = Math.floor(Math.random() * CASES.length);
+  G.activeCase = CASES[idx];
+  startGame();
+}
+
+// ─── CATEGORY MODE ────────────────────────────────────────────────────────────
+function buildCategoryFilter() {
+  const chips = document.getElementById('domainChips');
+  chips.innerHTML = '';
+
+  // "All" chip
+  const allChip = document.createElement('div');
+  allChip.className = 'domain-chip' + (!G.filteredDomain ? ' active' : '');
+  allChip.dataset.domain = 'all';
+  allChip.innerHTML = `🌐 All <span class="chip-count">${CASES.length}</span>`;
+  allChip.style.setProperty('color', G.filteredDomain ? '' : '#4fc3f7');
+  allChip.onclick = () => selectDomain(null, allChip);
+  chips.appendChild(allChip);
+
+  Object.entries(DOMAINS).forEach(([key, d]) => {
+    const count = CASES.filter(c => c.domain === key).length;
+    if (!count) return;
+    const chip = document.createElement('div');
+    chip.className = 'domain-chip' + (G.filteredDomain === key ? ' active' : '');
+    chip.dataset.domain = key;
+    chip.style.setProperty('--chip-color', d.color);
+    chip.innerHTML = `${d.icon} ${d.label} <span class="chip-count">${count}</span>`;
+    if (G.filteredDomain === key) { chip.style.color = d.color; }
+    chip.onclick = () => selectDomain(key, chip);
+    chips.appendChild(chip);
+  });
+
+  updateFilterCount();
+}
+
+function selectDomain(key, el) {
+  G.filteredDomain = key;
+  document.querySelectorAll('.domain-chip').forEach(c => {
+    c.classList.remove('active');
+    c.style.color = '';
+  });
+  el.classList.add('active');
+  const color = key ? DOMAINS[key].color : '#4fc3f7';
+  el.style.color = color;
+  updateFilterCount();
+  startCategoryCase();
+}
+
+function toggleTier(el) {
+  document.querySelectorAll('.tier-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  G.filteredTier = el.dataset.tier;
+  updateFilterCount();
+  startCategoryCase();
+}
+
+function getFilteredPool() {
+  return CASES.filter(c => {
+    const domainOk = !G.filteredDomain || c.domain === G.filteredDomain;
+    const tierOk   = G.filteredTier === 'all' || c.tier === G.filteredTier;
+    return domainOk && tierOk;
+  });
+}
+
+function updateFilterCount() {
+  const pool = getFilteredPool();
+  document.getElementById('filterCount').textContent = `${pool.length} case${pool.length !== 1 ? 's' : ''} match your filter`;
+}
+
+function startCategoryCase() {
+  const pool = getFilteredPool();
+  if (pool.length === 0) {
+    document.getElementById('gameArea').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No cases found</div>
+        <div class="empty-sub">Try adjusting your filters to find matching cases.</div>
+      </div>`;
+    return;
+  }
+  // Pick random from pool
+  G.activeCase = pool[Math.floor(Math.random() * pool.length)];
+  startGame();
+}
+
+// ─── CORE GAME ─────────────────────────────────────────────────────────────────
+function startGame() {
+  G.revealedClues = 1;
+  G.guesses = [];
+  G.done = false;
+  G.acIdx = -1;
+  G.acItems = [];
+
+  const inp = document.getElementById('dxInput');
+  if (inp) inp.value = '';
+  document.getElementById('guessHistory').innerHTML = '';
+  document.getElementById('resultPanel').classList.remove('show');
+  document.getElementById('inputArea').style.display = 'block';
+  document.getElementById('autocomplete').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+
+  // Rebuild case-meta
+  const c = G.activeCase;
+  document.getElementById('caseNum').textContent = `Case #${c.id}`;
+
+  const dom = DOMAINS[c.domain];
+  const domBadge = document.getElementById('caseDomainBadge');
+  domBadge.textContent = `${dom.icon} ${dom.label}`;
+  domBadge.style.color = dom.color;
+  domBadge.style.borderColor = dom.color + '44';
+  domBadge.style.background = dom.color + '14';
+
+  const tierBadge = document.getElementById('caseTierBadge');
+  tierBadge.textContent = c.tier.charAt(0).toUpperCase() + c.tier.slice(1);
+  tierBadge.className = `case-tier-badge tier-${c.tier}`;
+
+  renderClues();
+  renderPips();
+  updateRevealBtn();
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ─── RENDER CLUES ─────────────────────────────────────────────────────────────
+function renderClues() {
+  const c = G.activeCase;
+  const container = document.getElementById('cluesContainer');
+  container.innerHTML = '';
+  c.clues.forEach((clue, i) => {
+    const isRevealed = i < G.revealedClues;
+    const card = document.createElement('div');
+    card.className = `clue-card ${isRevealed ? 'revealed' : 'hidden-clue'}`;
+    card.innerHTML = `
+      <div class="clue-inner">
+        <div class="clue-icon-wrap">${isRevealed ? clue.icon : '🔒'}</div>
+        <div class="clue-content">
+          <div class="clue-type-label">${clue.type}</div>
+          <div class="clue-text">${isRevealed ? clue.text : 'Unlock by guessing or revealing below.'}</div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// ─── PIPS ─────────────────────────────────────────────────────────────────────
+function renderPips() {
+  const max  = G.activeCase.clues.length;
+  const pips = document.getElementById('pips');
+  pips.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const pip = document.createElement('div');
+    const g   = G.guesses[i];
+    pip.className = 'pip' + (g ? (g.correct ? ' correct' : ' used') : '');
+    pips.appendChild(pip);
+  }
+}
+
+function updateRevealBtn() {
+  const btn = document.getElementById('revealBtn');
+  btn.style.display = (G.revealedClues < G.activeCase.clues.length && !G.done) ? 'flex' : 'none';
+}
+
+// ─── AUTOCOMPLETE ─────────────────────────────────────────────────────────────
+function handleInput() {
+  const val = document.getElementById('dxInput').value.trim();
+  const ac  = document.getElementById('autocomplete');
+  if (val.length < 2) { ac.style.display = 'none'; G.acItems = []; return; }
+  const q = val.toLowerCase();
+  G.acItems = ALL_DIAGNOSES.filter(d => d.toLowerCase().includes(q)).slice(0, 7);
+  G.acIdx = -1;
+  if (!G.acItems.length) { ac.style.display = 'none'; return; }
+  ac.innerHTML = G.acItems.map((m, i) =>
+    `<div class="ac-item" data-i="${i}" onmousedown="selectAC(${i})">${m}</div>`
+  ).join('');
+  ac.style.display = 'block';
+}
+
+function selectAC(i) {
+  document.getElementById('dxInput').value = G.acItems[i];
+  document.getElementById('autocomplete').style.display = 'none';
+}
+
+function handleKey(e) {
+  const ac = document.getElementById('autocomplete');
+  if (e.key === 'ArrowDown') {
+    G.acIdx = Math.min(G.acIdx + 1, G.acItems.length - 1);
+    highlightAC(); e.preventDefault();
+  } else if (e.key === 'ArrowUp') {
+    G.acIdx = Math.max(G.acIdx - 1, -1);
+    highlightAC(); e.preventDefault();
+  } else if (e.key === 'Enter') {
+    if (G.acIdx >= 0 && G.acItems[G.acIdx]) selectAC(G.acIdx);
+    else submitGuess();
+  } else if (e.key === 'Escape') {
+    ac.style.display = 'none';
+  }
+}
+
+function highlightAC() {
+  document.querySelectorAll('.ac-item').forEach((el, i) => el.classList.toggle('ac-active', i === G.acIdx));
+  if (G.acIdx >= 0 && G.acItems[G.acIdx]) document.getElementById('dxInput').value = G.acItems[G.acIdx];
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+function normalise(s) { return s.toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+function submitGuess() {
+  if (G.done) return;
+  const input = document.getElementById('dxInput').value.trim();
+  if (!input) return;
+  document.getElementById('autocomplete').style.display = 'none';
+
+  const c       = G.activeCase;
+  const inputN  = normalise(input);
+  const answers = [c.answer, ...c.aliases].map(normalise);
+  const isCorrect = answers.includes(inputN);
+  const isPartial = !isCorrect && answers.some(a => a.includes(inputN) || inputN.includes(a));
+
+  G.guesses.push({ text: input, correct: isCorrect, partial: isPartial });
+
+  const hist = document.getElementById('guessHistory');
+  const row  = document.createElement('div');
+  row.className = `guess-row ${isCorrect ? 'guess-correct' : isPartial ? 'guess-partial' : 'guess-wrong'}`;
+  row.innerHTML = `
+    <span class="guess-icon">${isCorrect ? '✓' : isPartial ? '≈' : '✗'}</span>
+    <span class="guess-label">${input}</span>
+    <span class="guess-note">${isCorrect ? 'Correct!' : isPartial ? 'Close — check wording' : 'Not quite'}</span>`;
+  hist.appendChild(row);
+
+  renderPips();
+  document.getElementById('dxInput').value = '';
+
+  if (isCorrect) { endGame(true); return; }
+
+  // Reveal next clue automatically on wrong guess
+  if (G.revealedClues < c.clues.length) {
+    G.revealedClues++;
+    renderClues();
+    updateRevealBtn();
+  }
+
+  if (G.guesses.length >= c.clues.length && !isCorrect) endGame(false);
+}
+
+// ─── REVEAL NEXT CLUE ────────────────────────────────────────────────────────
+function revealNextClue() {
+  if (G.revealedClues >= G.activeCase.clues.length || G.done) return;
+  G.guesses.push({ text: '(skip)', correct: false, partial: false });
+  renderPips();
+  G.revealedClues++;
+  renderClues();
+  updateRevealBtn();
+}
+
+// ─── END GAME ────────────────────────────────────────────────────────────────
+function endGame(won) {
+  G.done = true;
+  document.getElementById('inputArea').style.display = 'none';
+  G.revealedClues = G.activeCase.clues.length;
+  renderClues();
+
+  // Update stats
+  const stats = loadStats();
+  stats.played = (stats.played || 0) + 1;
+  if (won) {
+    stats.wins = (stats.wins || 0) + 1;
+    stats.streak = (stats.streak || 0) + 1;
+    stats.bestStreak = Math.max(stats.bestStreak || 0, stats.streak);
+    stats.totalClues = (stats.totalClues || 0) + G.revealedClues;
+  } else {
+    stats.streak = 0;
+  }
+  // Domain breakdown
+  if (!stats.byDomain) stats.byDomain = {};
+  const dom = G.activeCase.domain;
+  if (!stats.byDomain[dom]) stats.byDomain[dom] = { played: 0, wins: 0 };
+  stats.byDomain[dom].played++;
+  if (won) stats.byDomain[dom].wins++;
+
+  // Daily tracking
+  if (G.mode === 'daily') {
+    const today = todayStr();
+    if (!stats.daily) stats.daily = { lastDate: null, streak: 0, completed: {} };
+    if (!stats.daily.completed) stats.daily.completed = {};
+    stats.daily.completed[today] = { won, clues: G.revealedClues, answer: G.activeCase.answer };
+    // Update daily streak
+    if (won) {
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+      const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+      if (stats.daily.lastDate === yStr || stats.daily.lastDate === today) {
+        stats.daily.streak = (stats.daily.streak || 0) + 1;
+      } else {
+        stats.daily.streak = 1;
+      }
+      stats.daily.lastDate = today;
+    }
+  }
+  saveStats(stats);
+
+  // Build result panel
+  const c      = G.activeCase;
+  const clues  = G.revealedClues;
+  const stars  = won ? Math.max(1, 6 - clues) : 0;
+  const starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+
+  document.getElementById('rEmoji').textContent = won ? (clues === 1 ? '🧠' : '✅') : '📖';
+  document.getElementById('rTitle').textContent = won ? `${starStr}` : 'Case closed';
+  document.getElementById('rTitle').className = `result-title ${won ? 'win' : 'lose'}`;
+  document.getElementById('rDx').innerHTML = won
+    ? `Correct in <strong>${clues} clue${clues>1?'s':''}</strong>. Diagnosis: <strong>${c.answer}</strong>`
+    : `The diagnosis was <strong>${c.answer}</strong>.`;
+  document.getElementById('rGuideline').textContent = c.guideline;
+  document.getElementById('rExplanation').textContent = c.explanation;
+
+  // Anki tags
+  const tagsDiv = document.getElementById('rAnkiTags');
+  tagsDiv.innerHTML = c.ankiTags.map(t =>
+    `<span class="anki-tag" title="Copy tag" onclick="copyTag('${t}')">${t}</span>`
+  ).join('');
+
+  // Next button label for daily mode
+  if (G.mode === 'daily') {
+    document.getElementById('nextBtn').textContent = 'See Stats 📊';
+    document.getElementById('nextBtn').onclick = () => openModal('statsModal');
+  } else {
+    document.getElementById('nextBtn').textContent = 'Next Case →';
+    document.getElementById('nextBtn').onclick = nextCase;
+  }
+
+  document.getElementById('resultPanel').classList.add('show');
+
+  // If daily, show complete screen after a short delay
+  if (G.mode === 'daily') {
+    const ds = loadStats().daily;
+    setTimeout(() => {
+      showDailyComplete({ won, clues, answer: c.answer }, ds.streak);
+    }, 8000);
+  }
+}
+
+// ─── NEXT CASE ────────────────────────────────────────────────────────────────
+function nextCase() {
+  if (G.mode === 'practice') {
+    startRandomCase();
+  } else if (G.mode === 'category') {
+    startCategoryCase();
+  }
+}
+
+// ─── SHARE ────────────────────────────────────────────────────────────────────
+function shareResult() {
+  const c    = G.activeCase;
+  const won  = G.guesses.some(g => g.correct);
+  const clues = G.revealedClues;
+  const stars = won ? '★'.repeat(Math.max(1, 6-clues)) + '☆'.repeat(5-Math.max(1,6-clues)) : '☆☆☆☆☆';
+  const domLabel = DOMAINS[c.domain]?.label || c.domain;
+  const text = `Dandle — Case #${c.id} (${domLabel})\n${won ? `Diagnosed in ${clues} clue${clues>1?'s':''}! ${stars}` : `Could not diagnose — ${c.answer}`}\n🧠 dandle.app`;
+  navigator.clipboard.writeText(text)
+    .then(() => alert('Result copied to clipboard!'))
+    .catch(() => alert(text));
+}
+
+// ─── COPY ANKI TAG ────────────────────────────────────────────────────────────
+function copyTag(tag) {
+  navigator.clipboard.writeText(tag).then(() => {
+    // brief visual feedback
+    event.target.style.background = 'rgba(124,131,255,.4)';
+    setTimeout(() => { event.target.style.background = ''; }, 600);
+  });
+}
+
+// ─── STATS MODAL ─────────────────────────────────────────────────────────────
+function renderStatsModal() {
+  const s = loadStats();
+  const winRate = s.played ? Math.round(s.wins/s.played*100) : 0;
+  const avgClues = s.wins ? (s.totalClues/s.wins).toFixed(1) : '—';
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${s.played||0}</div><div class="stat-lbl">Played</div></div>
+    <div class="stat-box"><div class="stat-num">${winRate}%</div><div class="stat-lbl">Win Rate</div></div>
+    <div class="stat-box"><div class="stat-num">${s.streak||0}</div><div class="stat-lbl">Current Streak</div></div>
+    <div class="stat-box"><div class="stat-num">${s.bestStreak||0}</div><div class="stat-lbl">Best Streak</div></div>
+    <div class="stat-box"><div class="stat-num">${(s.daily&&s.daily.streak)||0}</div><div class="stat-lbl">Daily Streak 🔥</div></div>
+    <div class="stat-box"><div class="stat-num">${avgClues}</div><div class="stat-lbl">Avg Clues</div></div>
+  `;
+
+  // Domain breakdown
+  let breakdown = '<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">By Subspecialty</div>';
+  if (s.byDomain && Object.keys(s.byDomain).length) {
+    Object.entries(s.byDomain).forEach(([dom, data]) => {
+      const d = DOMAINS[dom];
+      if (!d) return;
+      const wr = data.played ? Math.round(data.wins/data.played*100) : 0;
+      breakdown += `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+          <span style="color:var(--text-dim);">${d.icon} ${d.label}</span>
+          <span style="font-family:JetBrains Mono,monospace;font-size:12px;color:${d.color};">${data.wins}/${data.played} (${wr}%)</span>
+        </div>`;
+    });
+  } else {
+    breakdown += '<p>Play more cases to see your breakdown by subspecialty.</p>';
+  }
+  document.getElementById('statsBreakdown').innerHTML = breakdown;
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────────────────
+function openModal(id) {
+  if (id === 'statsModal') renderStatsModal();
+  document.getElementById(id).classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el =>
+  el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); })
+);
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+setMode('daily');
+</script>
+</body>
+</html>
